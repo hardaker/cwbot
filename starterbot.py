@@ -1,6 +1,8 @@
 import os
 import time
 import re
+import json
+import atexit
 from slackclient import SlackClient
 
 
@@ -14,6 +16,13 @@ RTM_READ_DELAY = 1 # 1 second delay between reading from RTM
 EXAMPLE_COMMAND = "do"
 MENTION_REGEX = "^<@(|[WU].+?)>(.*)"
 
+# data saving support
+SAVE_FILE=os.environ.get('SLACK_SAVE_FILE')
+our_data={}
+
+#
+# Functions
+#
 def bot_return_help(args):
     return """
 help:    This message!
@@ -26,6 +35,21 @@ bot_commands = {
     'help': bot_return_help,
     'echo': bot_echo_test,
 }
+
+#
+# Load and Save Data
+#
+def save_data():
+    with open(SAVE_FILE, "w") as outf:
+        outf.write(json.dumps(our_data, sort_keys=True, indent=4))
+        outf.write("\n")
+        print("saved data")
+
+def load_data():
+    if os.path.exists(SAVE_FILE):
+        with open(SAVE_FILE, "r") as inf:
+            print("loading data...")
+            our_data=json.loads(inf.read())
 
 def parse_bot_commands(slack_events):
     """
@@ -73,6 +97,8 @@ def handle_command(command, channel):
     )
 
 if __name__ == "__main__":
+    load_data()
+    atexit.register(save_data)
     if slack_client.rtm_connect(with_team_state=False):
         print("Starter Bot connected and running!")
         # Read bot's user ID by calling Web API method `auth.test`
@@ -84,3 +110,5 @@ if __name__ == "__main__":
             time.sleep(RTM_READ_DELAY)
     else:
         print("Connection failed. Exception traceback printed above.")
+
+    save_data()
