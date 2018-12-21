@@ -14,6 +14,19 @@ RTM_READ_DELAY = 1 # 1 second delay between reading from RTM
 EXAMPLE_COMMAND = "do"
 MENTION_REGEX = "^<@(|[WU].+?)>(.*)"
 
+def bot_return_help(args):
+    return """
+help:    This message!
+"""
+
+def bot_echo_test(args):
+    return " ".join(args)
+
+bot_commands = {
+    'help': bot_return_help,
+    'echo': bot_echo_test,
+}
+
 def parse_bot_commands(slack_events):
     """
         Parses a list of events coming from the Slack RTM API to find bot commands.
@@ -46,8 +59,11 @@ def handle_command(command, channel):
     # Finds and executes the given command, filling in response
     response = None
     # This is where you start to implement more commands!
-    if command.startswith(EXAMPLE_COMMAND):
-        response = "Sure...write some more code then I can do that!"
+    parts = command.split()
+    if parts[0] in bot_commands:
+        response = bot_commands[parts[0]](parts[1:]) # call it
+    else:
+        response = "Sorry, I don't that command.  Try 'help'?"
 
     # Sends the response back to the channel
     slack_client.api_call(
