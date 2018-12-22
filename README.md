@@ -10,7 +10,7 @@ token](https://api.slack.com/apps/AEZHZ71A4/install-on-team?success=1),
 fill out the two two variables in this short bash script:
 
 ```
-export SLACK_BOT_TOKEN=xoxb-481632186182-510179647172-1DQUiP22QfFWBpDYoee3mcbH
+export SLACK_BOT_TOKEN=xoxb-....
 export SLACK_SAVE_FILE=/tmp/save.json
 
 python3 cwbot.py
