@@ -81,13 +81,30 @@ def bot_add_time(channel, user, args):
 
     return "Added a time for you of " + str(time) + " seconds"
 
+def average_score(entries):
+    total = 0
+    if(len(entries) == 0):
+        return 0
+    for e in entries:
+        total = total + e['time']
+    return float(total)/float(len(entries))
+
+def sec_to_hhmm(secs):
+    return "%02d:%02d" % (secs/60, secs % 60)
+
 def bot_score(channel, user, args):
-    result_msg = ""
     if 'cwtimes' not in our_data:
         return "No scores recorded so far"
+
+    # create a header
+    result_msg = "%-30.30s %3s    %s\n" % ("Name", "Cnt", "Average")
+
+    # add each user scores summary
     for user in our_data['cwtimes']:
         user_info = find_user(user)
-        result_msg += "%-30.30s %3d %f" % (user_info['real_name'], len(our_data['cwtimes'][user]['times']), 1.2)
+        ave_score = sec_to_hhmm(average_score(our_data['cwtimes'][user]['times']))
+        result_msg += "%-30.30s %3d    %s\n" % (user_info['real_name'], len(our_data['cwtimes'][user]['times']),
+                                              sec_to_hhmm(average_score(our_data['cwtimes'][user]['times'])))
     return result_msg
 
 bot_commands = {
@@ -99,8 +116,9 @@ bot_commands = {
                'help': "print out information about me"},
     'time':   {'fn': bot_add_time,
                'help': "Add todays' time to your running score"},
-    'score':   {'fn': bot_score,
-                'help': "Display the scores to date"},
+    'scores': {'fn': bot_score,
+               'help': "Display the scores to date"},
+    'score':   {'fn': bot_score},
 }
 
 #
