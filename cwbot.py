@@ -3,6 +3,7 @@ import time
 import re
 import json
 import atexit
+import time
 from slackclient import SlackClient
 
 
@@ -56,6 +57,11 @@ def bot_parse_hour_minute(mmss):
 
     return None
 
+def make_datestr():
+    now = time.localtime()
+    date = "%04s/%02s/%02s" % (now.tm_year, now.tm_mon, now.tm_mday)
+    return date
+
 def bot_add_time(channel, user, args):
     user_info = find_user(user)
     if not user_info:
@@ -71,11 +77,13 @@ def bot_add_time(channel, user, args):
             'times': []
         }
 
+    date = make_datestr()
+
     time = bot_parse_hour_minute(args[0])
     if not time:
         return "invalid time; must be MM:SS formatted."
     
-    our_data['cwtimes'][user]['times'].append({'date': 'foo', 'time': time})
+    our_data['cwtimes'][user]['times'].append({'date': date, 'time': time})
 
     save_data()
 
@@ -110,7 +118,7 @@ def bot_score(channel, user, args):
 def bot_entries(channel, user, args):
     result_str = ""
     for entry in our_data['cwtimes'][user]['times']:
-        result_str += "%-10.10s %s\n" % (entry['date'], sec_to_hhmm(entry['time']))
+        result_str += "%-15.15s %s\n" % (entry['date'], sec_to_hhmm(entry['time']))
     return result_str
 
 bot_commands = {
