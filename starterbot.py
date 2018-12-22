@@ -24,16 +24,19 @@ our_data={}
 # Functions
 #
 def bot_return_help(args):
-    return """
-help:    This message!
-"""
+    help = ""
+    for command in bot_commands:
+        help += "%-10.10s %s\n" % (command, bot_commands[command]['help'])
+    return help
 
 def bot_echo_test(args):
     return " ".join(args)
 
 bot_commands = {
-    'help': bot_return_help,
-    'echo': bot_echo_test,
+    'help': {'fn': bot_return_help,
+             'help': "Get help (this message)"},
+    'echo': {'fn': bot_echo_test,
+             'help': "Repeat back whatever I say"}
 }
 
 #
@@ -61,8 +64,8 @@ def parse_bot_commands(slack_events):
         if event["type"] == "message" and not "subtype" in event:
             user_id, message = parse_direct_mention(event["text"])
             if user_id == starterbot_id:
-                return message, event["channel"]
-    return None, None
+                return message, event["channel"], event["user"]
+    return None, None, None
 
 def parse_direct_mention(message_text):
     """
@@ -73,7 +76,7 @@ def parse_direct_mention(message_text):
     # the first group contains the username, the second group contains the remaining message
     return (matches.group(1), matches.group(2).strip()) if matches else (None, None)
 
-def handle_command(command, channel):
+def handle_command(command, channel, user):
     """
         Executes bot command if the command is known
     """
@@ -82,10 +85,12 @@ def handle_command(command, channel):
 
     # Finds and executes the given command, filling in response
     response = None
+
     # This is where you start to implement more commands!
     parts = command.split()
     if parts[0] in bot_commands:
-        response = bot_commands[parts[0]](parts[1:]) # call it
+        fn = bot_commands[parts[0]]['fn']
+        response = fn(parts[1:]) # call it
     else:
         response = "Sorry, I don't that command.  Try 'help'?"
 
@@ -104,9 +109,9 @@ if __name__ == "__main__":
         # Read bot's user ID by calling Web API method `auth.test`
         starterbot_id = slack_client.api_call("auth.test")["user_id"]
         while True:
-            command, channel = parse_bot_commands(slack_client.rtm_read())
+            command, channel, user = parse_bot_commands(slack_client.rtm_read())
             if command:
-                handle_command(command, channel)
+                handle_command(command, channel, user)
             time.sleep(RTM_READ_DELAY)
     else:
         print("Connection failed. Exception traceback printed above.")
