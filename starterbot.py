@@ -107,6 +107,12 @@ def bot_score(channel, user, args):
                                               sec_to_hhmm(average_score(our_data['cwtimes'][user]['times'])))
     return result_msg
 
+def bot_entries(channel, user, args):
+    result_str = ""
+    for entry in our_data['cwtimes'][user]['times']:
+        result_str += "%-10.10s %s\n" % (entry['date'], sec_to_hhmm(entry['time']))
+    return result_str
+
 bot_commands = {
     'help':   {'fn': bot_return_help,
                'help': "Get help (this message)"},
@@ -119,6 +125,8 @@ bot_commands = {
     'scores': {'fn': bot_score,
                'help': "Display the scores to date"},
     'score':   {'fn': bot_score},
+    'entries': {'fn': bot_entries,
+                'help': "List each recorded entry (for you)"}
 }
 
 #
