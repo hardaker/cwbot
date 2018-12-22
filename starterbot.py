@@ -32,11 +32,16 @@ def bot_return_help(channel, user, args):
 def bot_echo_test(channel, user, args):
     return " ".join(args)
 
+def bot_whoami(channel, user, args):
+    return "userid: " + user
+
 bot_commands = {
-    'help': {'fn': bot_return_help,
-             'help': "Get help (this message)"},
-    'echo': {'fn': bot_echo_test,
-             'help': "Repeat back whatever I say"}
+    'help':   {'fn': bot_return_help,
+               'help': "Get help (this message)"},
+    'echo':   {'fn': bot_echo_test,
+               'help': "Repeat back whatever I say"},
+    'whoami': {'fn': bot_whoami,
+               'help': "print out information about me"}
 }
 
 #
