@@ -2,7 +2,7 @@ import unittest
 
 class CWTests(unittest.TestCase):
     def test_hhmm(self):
-        import starterbot as s
+        import cwbot as s
         
         self.assertEqual(s.sec_to_hhmm(30), "00:30")
         self.assertEqual(s.sec_to_hhmm(59), "00:59")
@@ -11,7 +11,7 @@ class CWTests(unittest.TestCase):
         self.assertEqual(s.sec_to_hhmm(121), "02:01")
 
     def test_average(self):
-        import starterbot as s
+        import cwbot as s
 
         scores=[{'date': "12/10", "time": 50}]
 
