@@ -20,3 +20,7 @@ class CWTests(unittest.TestCase):
 
         scores.append({'date': "12/11", "time": 150})
         self.assertEqual(s.average_score(scores), 100)
+
+    # def test_date(self):
+    #     import cwbot as s
+    #     self.assertEqual(s.make_datestr(), "2018/12/22")
