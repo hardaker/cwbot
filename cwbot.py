@@ -29,7 +29,7 @@ time_parse = re.compile("([0-9]+):([0-9]+)")
 # Functions
 #
 def bot_return_help(channel, user, args):
-    help = ""
+    help = "CWBot: track times for games played at https://www.nytimes.com/crosswords/game/mini\n\n"
     for command in bot_commands:
         if 'help' in bot_commands[command]:
             help += "%-10.10s %s\n" % (command, bot_commands[command]['help'])
