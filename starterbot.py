@@ -75,7 +75,19 @@ def bot_add_time(channel, user, args):
         return "invalid time; must be MM:SS formatted."
     
     our_data['cwtimes'][user]['times'].append({'date': 'foo', 'time': time})
+
+    save_data()
+
     return "Added a time for you of " + str(time) + " seconds"
+
+def bot_score(channel, user, args):
+    result_msg = ""
+    if 'cwtimes' not in our_data:
+        return "No scores recorded so far"
+    for user in our_data['cwtimes']:
+        user_info = find_user(user)
+        result_msg += "%-30.30s %3d %f" % (user_info['real_name'], len(our_data['cwtimes'][user]['times']), 1.2)
+    return result_msg
 
 bot_commands = {
     'help':   {'fn': bot_return_help,
@@ -85,7 +97,9 @@ bot_commands = {
     'whoami': {'fn': bot_whoami,
                'help': "print out information about me"},
     'time':   {'fn': bot_add_time,
-               'help': "Add todays' time to your running score"}
+               'help': "Add todays' time to your running score"},
+    'score':   {'fn': bot_score,
+                'help': "Display the scores to date"},
 }
 
 #
@@ -109,6 +123,7 @@ def save_data():
 def load_data():
     if os.path.exists(SAVE_FILE):
         with open(SAVE_FILE, "r") as inf:
+            global our_data
             print("loading data...")
             our_data=json.loads(inf.read())
 
@@ -164,7 +179,6 @@ def handle_command(command, channel, user):
 
 if __name__ == "__main__":
     load_data()
-    atexit.register(save_data)
     if slack_client.rtm_connect(with_team_state=False):
         print("Starter Bot connected and running!")
         # Read bot's user ID by calling Web API method `auth.test`
@@ -180,4 +194,3 @@ if __name__ == "__main__":
     else:
         print("Connection failed. Exception traceback printed above.")
 
-    save_data()
