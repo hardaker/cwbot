@@ -23,13 +23,13 @@ our_data={}
 #
 # Functions
 #
-def bot_return_help(args):
+def bot_return_help(channel, user, args):
     help = ""
     for command in bot_commands:
         help += "%-10.10s %s\n" % (command, bot_commands[command]['help'])
     return help
 
-def bot_echo_test(args):
+def bot_echo_test(channel, user, args):
     return " ".join(args)
 
 bot_commands = {
@@ -90,7 +90,7 @@ def handle_command(command, channel, user):
     parts = command.split()
     if parts[0] in bot_commands:
         fn = bot_commands[parts[0]]['fn']
-        response = fn(parts[1:]) # call it
+        response = fn(channel, user, parts[1:]) # call it
     else:
         response = "Sorry, I don't that command.  Try 'help'?"
 
