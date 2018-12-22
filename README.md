@@ -30,3 +30,8 @@ help       Get help (this message)
 echo       Repeat back whatever I say
 whoami     print out information about me
 ```
+
+# TODO
+
+- allow recording a time for a past date
+
