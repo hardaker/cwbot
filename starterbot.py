@@ -30,7 +30,8 @@ time_parse = re.compile("([0-9]+):([0-9]+)")
 def bot_return_help(channel, user, args):
     help = ""
     for command in bot_commands:
-        help += "%-10.10s %s\n" % (command, bot_commands[command]['help'])
+        if 'help' in bot_commands[command]:
+            help += "%-10.10s %s\n" % (command, bot_commands[command]['help'])
     return help
 
 def bot_echo_test(channel, user, args):
