@@ -22,6 +22,8 @@ our_data={}
 
 user_list=None
 
+time_parse = re.compile("([0-9]+):([0-9]+)")
+
 #
 # Functions
 #
@@ -46,13 +48,44 @@ def bot_whoami(channel, user, args):
     return_string += "name:      " + user_info['name'] + "\n"
     return return_string
 
+def bot_parse_hour_minute(mmss):
+    result = time_parse.match(mmss)
+    if result:
+        return int(result.group(1)) * 60 + int(result.group(2))
+
+    return None
+
+def bot_add_time(channel, user, args):
+    user_info = find_user(user)
+    if not user_info:
+        return "Unable to find your user information"
+
+    global our_data
+
+    if 'cwtimes' not in our_data:
+        our_data['cwtimes'] = {}
+
+    if user not in our_data['cwtimes']:
+        our_data['cwtimes'][user] = {
+            'times': []
+        }
+
+    time = bot_parse_hour_minute(args[0])
+    if not time:
+        return "invalid time; must be MM:SS formatted."
+    
+    our_data['cwtimes'][user]['times'].append({'date': 'foo', 'time': time})
+    return "Added a time for you of " + str(time) + " seconds"
+
 bot_commands = {
     'help':   {'fn': bot_return_help,
                'help': "Get help (this message)"},
     'echo':   {'fn': bot_echo_test,
                'help': "Repeat back whatever I say"},
     'whoami': {'fn': bot_whoami,
-               'help': "print out information about me"}
+               'help': "print out information about me"},
+    'time':   {'fn': bot_add_time,
+               'help': "Add todays' time to your running score"}
 }
 
 #
