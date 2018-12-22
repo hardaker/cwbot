@@ -20,6 +20,8 @@ MENTION_REGEX = "^<@(|[WU].+?)>(.*)"
 SAVE_FILE=os.environ.get('SLACK_SAVE_FILE')
 our_data={}
 
+user_list=None
+
 #
 # Functions
 #
@@ -33,7 +35,16 @@ def bot_echo_test(channel, user, args):
     return " ".join(args)
 
 def bot_whoami(channel, user, args):
-    return "userid: " + user
+    user_info = find_user(user)
+    # for info in user_info:
+    #     print("%-20s: %s" % (info, user_info[info]))
+
+    return_string = ""
+
+    return_string += "userid:    " + user + "\n"
+    return_string += "full name: " + user_info['real_name'] + "\n"
+    return_string += "name:      " + user_info['name'] + "\n"
+    return return_string
 
 bot_commands = {
     'help':   {'fn': bot_return_help,
@@ -43,6 +54,15 @@ bot_commands = {
     'whoami': {'fn': bot_whoami,
                'help': "print out information about me"}
 }
+
+#
+# Support
+#
+def find_user(id):
+    for user in user_list:
+        if user['id'] == id:
+            return user
+    return None
 
 #
 # Load and Save Data
@@ -59,6 +79,9 @@ def load_data():
             print("loading data...")
             our_data=json.loads(inf.read())
 
+#
+# Connection / routing
+#
 def parse_bot_commands(slack_events):
     """
         Parses a list of events coming from the Slack RTM API to find bot commands.
@@ -113,6 +136,9 @@ if __name__ == "__main__":
         print("Starter Bot connected and running!")
         # Read bot's user ID by calling Web API method `auth.test`
         starterbot_id = slack_client.api_call("auth.test")["user_id"]
+
+        user_list = slack_client.api_call("users.list")['members']
+        
         while True:
             command, channel, user = parse_bot_commands(slack_client.rtm_read())
             if command:
