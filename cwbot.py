@@ -29,13 +29,14 @@ time_parse = re.compile("([0-9]+):([0-9]+)")
 # Functions
 #
 def bot_return_help(channel, user, args):
-    help = "CWBot: track times for games played at https://www.nytimes.com/crosswords/game/mini\n\n"
+    help = "```CWBot: track times for games played at https://www.nytimes.com/crosswords/game/mini\n\n"
     help += "- Record your daily time by saying '@cwbot time HH:MM'\n"
     help += "\n"
     help += "Other commands: \n"
     for command in bot_commands:
         if 'help' in bot_commands[command]:
             help += "%-10.10s %s\n" % (command, bot_commands[command]['help'])
+    help += "```"
     return help
 
 def bot_echo_test(channel, user, args):
@@ -46,11 +47,11 @@ def bot_whoami(channel, user, args):
     # for info in user_info:
     #     print("%-20s: %s" % (info, user_info[info]))
 
-    return_string = ""
-
+    return_string = "```"
     return_string += "userid:    " + user + "\n"
     return_string += "full name: " + user_info['real_name'] + "\n"
     return_string += "name:      " + user_info['name'] + "\n"
+    return_string += "```"
     return return_string
 
 def bot_parse_hour_minute(mmss):
@@ -108,7 +109,8 @@ def bot_score(channel, user, args):
         return "No scores recorded so far"
 
     # create a header
-    result_msg = "%-30.30s %3s    %s\n" % ("Name", "Cnt", "Average")
+    result_msg = "```"
+    result_msg += "%-30.30s %3s    %s\n" % ("Name", "Cnt", "Average")
 
     # add each user scores summary
     for user in our_data['cwtimes']:
@@ -116,12 +118,15 @@ def bot_score(channel, user, args):
         ave_score = sec_to_hhmm(average_score(our_data['cwtimes'][user]['times']))
         result_msg += "%-30.30s %3d    %s\n" % (user_info['real_name'], len(our_data['cwtimes'][user]['times']),
                                               sec_to_hhmm(average_score(our_data['cwtimes'][user]['times'])))
+    result_msg += "```"
     return result_msg
 
 def bot_entries(channel, user, args):
-    result_str = ""
+    result_str = "```"
     for entry in our_data['cwtimes'][user]['times']:
         result_str += "%-15.15s %s\n" % (entry['date'], sec_to_hhmm(entry['time']))
+    result_str += "```"
+
     return result_str
 
 bot_commands = {
