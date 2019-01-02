@@ -55,3 +55,6 @@ Someone Else                     1    00:55
 
 - allow recording a time for a past date
 
+# Background software
+
+This bot is based off my adaption of the [slack starter bot](https://github.com/hardaker/slack-starterbot).
