@@ -31,6 +31,26 @@ echo       Repeat back whatever I say
 whoami     print out information about me
 ```
 
+## Example
+
+```
+@cwbot time 1:39
+Added a time for you of 99 seconds
+
+@cwbot time 1:51
+Added a time for you of 111 seconds
+
+...
+
+@cwbot scores
+Name                           Cnt    Average
+Wes Hardaker                     5    02:53
+Someone Else                     1    00:55
+
+```
+
+(clearly, "someone else" is better at crossword puzzles than I am)
+
 # TODO
 
 - allow recording a time for a past date
