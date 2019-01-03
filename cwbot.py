@@ -28,7 +28,7 @@ time_parse = re.compile("([0-9]+):([0-9]+)")
 #
 # Functions
 #
-def bot_return_help(channel, user, args):
+def bot_return_help(channel, user, args, ts):
     help = "```CWBot: track times for games played at https://www.nytimes.com/crosswords/game/mini\n\n"
     help += "- Record your daily time by saying '@cwbot time HH:MM'\n"
     help += "\n"
@@ -46,7 +46,7 @@ def bot_return_help(channel, user, args):
 
     return response
 
-def bot_echo_test(channel, user, args):
+def bot_echo_test(channel, user, args, ts):
     response = {
         "method": "chat.postMessage",
         "channel": channel,
@@ -55,7 +55,7 @@ def bot_echo_test(channel, user, args):
 
     return response
 
-def bot_whoami(channel, user, args):
+def bot_whoami(channel, user, args, ts):
     user_info = find_user(user)
     # for info in user_info:
     #     print("%-20s: %s" % (info, user_info[info]))
@@ -86,7 +86,7 @@ def make_datestr():
     date = "%04s/%02s/%02s" % (now.tm_year, now.tm_mon, now.tm_mday)
     return date
 
-def bot_add_time(channel, user, args):
+def bot_add_time(channel, user, args, ts):
     user_info = find_user(user)
     if not user_info:
         return "Unable to find your user information"
@@ -113,9 +113,10 @@ def bot_add_time(channel, user, args):
 
 
     response = {
-        "method": "chat.postMessage",
+        "method": "reactions.add",
         "channel": channel,
-        "text": "Added a time for you of " + str(time) + " seconds"
+        "timestamp": ts,
+        "name": "white_check_mark"
     }
 
     return response
@@ -131,7 +132,7 @@ def average_score(entries):
 def sec_to_hhmm(secs):
     return "%02d:%02d" % (secs/60, secs % 60)
 
-def bot_score(channel, user, args):
+def bot_score(channel, user, args, ts):
     if 'cwtimes' not in our_data:
         return "No scores recorded so far"
 
@@ -155,7 +156,7 @@ def bot_score(channel, user, args):
 
     return response
 
-def bot_entries(channel, user, args):
+def bot_entries(channel, user, args, ts):
     result_str = "```"
     for entry in our_data['cwtimes'][user]['times']:
         result_str += "%-15.15s %s\n" % (entry['date'], sec_to_hhmm(entry['time']))
@@ -224,8 +225,8 @@ def parse_bot_commands(slack_events):
         if event["type"] == "message" and not "subtype" in event:
             user_id, message = parse_direct_mention(event["text"])
             if user_id == starterbot_id:
-                return message, event["channel"], event["user"]
-    return None, None, None
+                return message, event["channel"], event["user"], event["ts"]
+    return None, None, None, None
 
 def parse_direct_mention(message_text):
     """
@@ -236,7 +237,7 @@ def parse_direct_mention(message_text):
     # the first group contains the username, the second group contains the remaining message
     return (matches.group(1), matches.group(2).strip()) if matches else (None, None)
 
-def handle_command(command, channel, user):
+def handle_command(command, channel, user, ts):
     """
         Executes bot command if the command is known
     """
@@ -252,7 +253,7 @@ def handle_command(command, channel, user):
     cmd, *args = command.split()
     if cmd in bot_commands:
         fn = bot_commands[cmd]['fn']
-        response = fn(channel, user, args) # call it
+        response = fn(channel, user, args, ts) # call it
 
     # Sends the response back to the channel
     return slack_client.api_call(**response)
@@ -267,9 +268,9 @@ if __name__ == "__main__":
         user_list = slack_client.api_call("users.list")['members']
         
         while True:
-            command, channel, user = parse_bot_commands(slack_client.rtm_read())
+            command, channel, user, ts = parse_bot_commands(slack_client.rtm_read())
             if command:
-                handle_command(command, channel, user)
+                handle_command(command, channel, user, ts)
             time.sleep(RTM_READ_DELAY)
     else:
         print("Connection failed. Exception traceback printed above.")
