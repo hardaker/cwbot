@@ -86,10 +86,17 @@ def make_datestr():
     date = "%04s/%02s/%02s" % (now.tm_year, now.tm_mon, now.tm_mday)
     return date
 
+def make_error(msg, channel):
+    return {
+        "method": "chat.postMessage",
+        "channel": channel,
+        "text": msg
+    }
+
 def bot_add_time(channel, user, args, ts):
     user_info = find_user(user)
     if not user_info:
-        return "Unable to find your user information"
+        return make_error("Unable to find your user information", channel)
 
     global our_data
 
@@ -105,7 +112,7 @@ def bot_add_time(channel, user, args, ts):
 
     time = bot_parse_hour_minute(args[0])
     if not time:
-        return "invalid time; must be MM:SS formatted."
+        return make_error("invalid time; must be MM:SS formatted.", channel)
     
     our_data['cwtimes'][user]['times'].append({'date': date, 'time': time})
 
@@ -134,7 +141,7 @@ def sec_to_hhmm(secs):
 
 def bot_score(channel, user, args, ts):
     if 'cwtimes' not in our_data:
-        return "No scores recorded so far"
+        return make_error("No scores recorded so far", channel)
 
     # create a header
     result_msg = "```"
