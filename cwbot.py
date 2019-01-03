@@ -159,16 +159,15 @@ def find_user(id):
 #
 def save_data():
     with open(SAVE_FILE, "w") as outf:
-        outf.write(json.dumps(our_data, sort_keys=True, indent=4))
-        outf.write("\n")
+        json.dump(our_data, outf, sort_keys=True, indent=4)
         print("saved data")
 
 def load_data():
     if os.path.exists(SAVE_FILE):
+        global our_data
         with open(SAVE_FILE, "r") as inf:
-            global our_data
-            print("loading data...")
-            our_data=json.loads(inf.read())
+            our_data = json.load(inf)
+        print("loaded data...")
 
 #
 # Connection / routing
