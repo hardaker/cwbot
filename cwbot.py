@@ -37,10 +37,23 @@ def bot_return_help(channel, user, args):
         if 'help' in bot_commands[command]:
             help += "%-10.10s %s\n" % (command, bot_commands[command]['help'])
     help += "```"
-    return help
+
+    response = {
+        "method": "chat.postMessage",
+        "channel": channel,
+        "text": help
+    }
+
+    return response
 
 def bot_echo_test(channel, user, args):
-    return " ".join(args)
+    response = {
+        "method": "chat.postMessage",
+        "channel": channel,
+        "text": " ".join(args)
+    }
+
+    return response
 
 def bot_whoami(channel, user, args):
     user_info = find_user(user)
@@ -52,7 +65,14 @@ def bot_whoami(channel, user, args):
     return_string += "full name: " + user_info['real_name'] + "\n"
     return_string += "name:      " + user_info['name'] + "\n"
     return_string += "```"
-    return return_string
+
+    response = {
+        "method": "chat.postMessage",
+        "channel": channel,
+        "text": return_string
+    }
+
+    return response
 
 def bot_parse_hour_minute(mmss):
     result = time_parse.match(mmss)
@@ -91,7 +111,14 @@ def bot_add_time(channel, user, args):
 
     save_data()
 
-    return "Added a time for you of " + str(time) + " seconds"
+
+    response = {
+        "method": "chat.postMessage",
+        "channel": channel,
+        "text": "Added a time for you of " + str(time) + " seconds"
+    }
+
+    return response
 
 def average_score(entries):
     total = 0
@@ -119,7 +146,14 @@ def bot_score(channel, user, args):
         result_msg += "%-30.30s %3d    %s\n" % (user_info['real_name'], len(our_data['cwtimes'][user]['times']),
                                               sec_to_hhmm(average_score(our_data['cwtimes'][user]['times'])))
     result_msg += "```"
-    return result_msg
+
+    response = {
+        "method": "chat.postMessage",
+        "channel": channel,
+        "text": result_msg
+    }
+
+    return response
 
 def bot_entries(channel, user, args):
     result_str = "```"
@@ -127,7 +161,14 @@ def bot_entries(channel, user, args):
         result_str += "%-15.15s %s\n" % (entry['date'], sec_to_hhmm(entry['time']))
     result_str += "```"
 
-    return result_str
+    # Finds and executes the given command, filling in response
+    response = {
+        "method": "chat.postMessage",
+        "channel": channel,
+        "text": result_str
+    }
+
+    return response
 
 bot_commands = {
     'help':   {'fn': bot_return_help,
@@ -144,6 +185,7 @@ bot_commands = {
     'entries': {'fn': bot_entries,
                 'help': "List each recorded entry (for you)"}
 }
+
 
 #
 # Support
@@ -198,26 +240,22 @@ def handle_command(command, channel, user):
     """
         Executes bot command if the command is known
     """
-    # Default response is help text for the user
-    default_response = "Not sure what you mean. Try *{}*.".format(EXAMPLE_COMMAND)
 
     # Finds and executes the given command, filling in response
-    response = None
+    response = {
+        "method": "chat.postMessage",
+        "channel": channel,
+        "text": "Sorry, I don't that command.  Try 'help'?"
+    }
 
     # This is where you start to implement more commands!
-    parts = command.split()
-    if parts[0] in bot_commands:
-        fn = bot_commands[parts[0]]['fn']
-        response = fn(channel, user, parts[1:]) # call it
-    else:
-        response = "Sorry, I don't that command.  Try 'help'?"
+    cmd, *args = command.split()
+    if cmd in bot_commands:
+        fn = bot_commands[cmd]['fn']
+        response = fn(channel, user, args) # call it
 
     # Sends the response back to the channel
-    slack_client.api_call(
-        "chat.postMessage",
-        channel=channel,
-        text=response or default_response
-    )
+    return slack_client.api_call(**response)
 
 if __name__ == "__main__":
     load_data()
