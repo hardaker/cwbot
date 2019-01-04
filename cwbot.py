@@ -28,7 +28,7 @@ time_parse = re.compile("([0-9]+):([0-9]+)")
 #
 # Functions
 #
-def bot_return_help(channel, user, args):
+def bot_return_help(channel, user, args, ts):
     help = "```CWBot: track times for games played at https://www.nytimes.com/crosswords/game/mini\n\n"
     help += "- Record your daily time by saying '@cwbot time HH:MM'\n"
     help += "\n"
@@ -37,12 +37,25 @@ def bot_return_help(channel, user, args):
         if 'help' in bot_commands[command]:
             help += "%-10.10s %s\n" % (command, bot_commands[command]['help'])
     help += "```"
-    return help
 
-def bot_echo_test(channel, user, args):
-    return " ".join(args)
+    response = {
+        "method": "chat.postMessage",
+        "channel": channel,
+        "text": help
+    }
 
-def bot_whoami(channel, user, args):
+    return response
+
+def bot_echo_test(channel, user, args, ts):
+    response = {
+        "method": "chat.postMessage",
+        "channel": channel,
+        "text": " ".join(args)
+    }
+
+    return response
+
+def bot_whoami(channel, user, args, ts):
     user_info = find_user(user)
     # for info in user_info:
     #     print("%-20s: %s" % (info, user_info[info]))
@@ -52,7 +65,14 @@ def bot_whoami(channel, user, args):
     return_string += "full name: " + user_info['real_name'] + "\n"
     return_string += "name:      " + user_info['name'] + "\n"
     return_string += "```"
-    return return_string
+
+    response = {
+        "method": "chat.postMessage",
+        "channel": channel,
+        "text": return_string
+    }
+
+    return response
 
 def bot_parse_hour_minute(mmss):
     result = time_parse.match(mmss)
@@ -66,10 +86,17 @@ def make_datestr():
     date = "%04s/%02s/%02s" % (now.tm_year, now.tm_mon, now.tm_mday)
     return date
 
-def bot_add_time(channel, user, args):
+def make_error(msg, channel):
+    return {
+        "method": "chat.postMessage",
+        "channel": channel,
+        "text": msg
+    }
+
+def bot_add_time(channel, user, args, ts):
     user_info = find_user(user)
     if not user_info:
-        return "Unable to find your user information"
+        return make_error("Unable to find your user information", channel)
 
     global our_data
 
@@ -85,13 +112,21 @@ def bot_add_time(channel, user, args):
 
     time = bot_parse_hour_minute(args[0])
     if not time:
-        return "invalid time; must be MM:SS formatted."
+        return make_error("invalid time; must be MM:SS formatted.", channel)
     
     our_data['cwtimes'][user]['times'].append({'date': date, 'time': time})
 
     save_data()
 
-    return "Added a time for you of " + str(time) + " seconds"
+
+    response = {
+        "method": "reactions.add",
+        "channel": channel,
+        "timestamp": ts,
+        "name": "white_check_mark"
+    }
+
+    return response
 
 def average_score(entries):
     total = 0
@@ -104,9 +139,9 @@ def average_score(entries):
 def sec_to_hhmm(secs):
     return "%02d:%02d" % (secs/60, secs % 60)
 
-def bot_score(channel, user, args):
+def bot_score(channel, user, args, ts):
     if 'cwtimes' not in our_data:
-        return "No scores recorded so far"
+        return make_error("No scores recorded so far", channel)
 
     # create a header
     result_msg = "```"
@@ -119,15 +154,29 @@ def bot_score(channel, user, args):
         result_msg += "%-30.30s %3d    %s\n" % (user_info['real_name'], len(our_data['cwtimes'][user]['times']),
                                               sec_to_hhmm(average_score(our_data['cwtimes'][user]['times'])))
     result_msg += "```"
-    return result_msg
 
-def bot_entries(channel, user, args):
+    response = {
+        "method": "chat.postMessage",
+        "channel": channel,
+        "text": result_msg
+    }
+
+    return response
+
+def bot_entries(channel, user, args, ts):
     result_str = "```"
     for entry in our_data['cwtimes'][user]['times']:
         result_str += "%-15.15s %s\n" % (entry['date'], sec_to_hhmm(entry['time']))
     result_str += "```"
 
-    return result_str
+    # Finds and executes the given command, filling in response
+    response = {
+        "method": "chat.postMessage",
+        "channel": channel,
+        "text": result_str
+    }
+
+    return response
 
 bot_commands = {
     'help':   {'fn': bot_return_help,
@@ -145,6 +194,7 @@ bot_commands = {
                 'help': "List each recorded entry (for you)"}
 }
 
+
 #
 # Support
 #
@@ -159,16 +209,15 @@ def find_user(id):
 #
 def save_data():
     with open(SAVE_FILE, "w") as outf:
-        outf.write(json.dumps(our_data, sort_keys=True, indent=4))
-        outf.write("\n")
+        json.dump(our_data, outf, sort_keys=True, indent=4)
         print("saved data")
 
 def load_data():
     if os.path.exists(SAVE_FILE):
+        global our_data
         with open(SAVE_FILE, "r") as inf:
-            global our_data
-            print("loading data...")
-            our_data=json.loads(inf.read())
+            our_data = json.load(inf)
+        print("loaded data...")
 
 #
 # Connection / routing
@@ -183,8 +232,8 @@ def parse_bot_commands(slack_events):
         if event["type"] == "message" and not "subtype" in event:
             user_id, message = parse_direct_mention(event["text"])
             if user_id == starterbot_id:
-                return message, event["channel"], event["user"]
-    return None, None, None
+                return message, event["channel"], event["user"], event["ts"]
+    return None, None, None, None
 
 def parse_direct_mention(message_text):
     """
@@ -195,30 +244,26 @@ def parse_direct_mention(message_text):
     # the first group contains the username, the second group contains the remaining message
     return (matches.group(1), matches.group(2).strip()) if matches else (None, None)
 
-def handle_command(command, channel, user):
+def handle_command(command, channel, user, ts):
     """
         Executes bot command if the command is known
     """
-    # Default response is help text for the user
-    default_response = "Not sure what you mean. Try *{}*.".format(EXAMPLE_COMMAND)
 
     # Finds and executes the given command, filling in response
-    response = None
+    response = {
+        "method": "chat.postMessage",
+        "channel": channel,
+        "text": "Sorry, I don't that command.  Try 'help'?"
+    }
 
     # This is where you start to implement more commands!
-    parts = command.split()
-    if parts[0] in bot_commands:
-        fn = bot_commands[parts[0]]['fn']
-        response = fn(channel, user, parts[1:]) # call it
-    else:
-        response = "Sorry, I don't that command.  Try 'help'?"
+    cmd, *args = command.split()
+    if cmd in bot_commands:
+        fn = bot_commands[cmd]['fn']
+        response = fn(channel, user, args, ts) # call it
 
     # Sends the response back to the channel
-    slack_client.api_call(
-        "chat.postMessage",
-        channel=channel,
-        text=response or default_response
-    )
+    return slack_client.api_call(**response)
 
 if __name__ == "__main__":
     load_data()
@@ -230,9 +275,9 @@ if __name__ == "__main__":
         user_list = slack_client.api_call("users.list")['members']
         
         while True:
-            command, channel, user = parse_bot_commands(slack_client.rtm_read())
+            command, channel, user, ts = parse_bot_commands(slack_client.rtm_read())
             if command:
-                handle_command(command, channel, user)
+                handle_command(command, channel, user, ts)
             time.sleep(RTM_READ_DELAY)
     else:
         print("Connection failed. Exception traceback printed above.")
