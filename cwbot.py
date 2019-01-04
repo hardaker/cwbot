@@ -38,22 +38,10 @@ def bot_return_help(channel, user, args, ts):
             help += "%-10.10s %s\n" % (command, bot_commands[command]['help'])
     help += "```"
 
-    response = {
-        "method": "chat.postMessage",
-        "channel": channel,
-        "text": help
-    }
-
-    return response
+    return help
 
 def bot_echo_test(channel, user, args, ts):
-    response = {
-        "method": "chat.postMessage",
-        "channel": channel,
-        "text": " ".join(args)
-    }
-
-    return response
+    return " ".join(args)
 
 def bot_whoami(channel, user, args, ts):
     user_info = find_user(user)
@@ -66,13 +54,7 @@ def bot_whoami(channel, user, args, ts):
     return_string += "name:      " + user_info['name'] + "\n"
     return_string += "```"
 
-    response = {
-        "method": "chat.postMessage",
-        "channel": channel,
-        "text": return_string
-    }
-
-    return response
+    return return_string
 
 def bot_parse_hour_minute(mmss):
     result = time_parse.match(mmss)
@@ -155,13 +137,7 @@ def bot_score(channel, user, args, ts):
                                               sec_to_hhmm(average_score(our_data['cwtimes'][user]['times'])))
     result_msg += "```"
 
-    response = {
-        "method": "chat.postMessage",
-        "channel": channel,
-        "text": result_msg
-    }
-
-    return response
+    return result_msg
 
 def bot_entries(channel, user, args, ts):
     result_str = "```"
@@ -170,13 +146,7 @@ def bot_entries(channel, user, args, ts):
     result_str += "```"
 
     # Finds and executes the given command, filling in response
-    response = {
-        "method": "chat.postMessage",
-        "channel": channel,
-        "text": result_str
-    }
-
-    return response
+    return result_str
 
 bot_commands = {
     'help':   {'fn': bot_return_help,
@@ -260,10 +230,15 @@ def handle_command(command, channel, user, ts):
     cmd, *args = command.split()
     if cmd in bot_commands:
         fn = bot_commands[cmd]['fn']
-        response = fn(channel, user, args, ts) # call it
+        cmd_answer = fn(channel, user, args, ts) # call it
 
-    # Sends the response back to the channel
-    return slack_client.api_call(**response)
+        # if they handed back a full answer, use it
+        if isinstance(cmd_answer, dict):
+            return slack_client.api_call(**response)
+
+        return slack_client.api_call("chat.postMessage",
+                                     channel=channel,
+                                     text=cmd_answer)
 
 if __name__ == "__main__":
     load_data()
