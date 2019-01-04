@@ -230,7 +230,7 @@ def handle_command(command, channel, user, ts):
     cmd, *args = command.split()
 
     # special handling for no cmd but just HH:MM
-    if cmd not in bot_entries:
+    if cmd not in bot_commands:
         result = time_parse.match(cmd)
         if result:
             args = [cmd]
