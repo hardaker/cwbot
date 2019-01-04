@@ -228,6 +228,14 @@ def handle_command(command, channel, user, ts):
 
     # This is where you start to implement more commands!
     cmd, *args = command.split()
+
+    # special handling for no cmd but just HH:MM
+    if cmd not in bot_entries:
+        result = time_parse.match(cmd)
+        if result:
+            args = [cmd]
+            cmd = "time"
+
     if cmd in bot_commands:
         fn = bot_commands[cmd]['fn']
         cmd_answer = fn(channel, user, args, ts) # call it
