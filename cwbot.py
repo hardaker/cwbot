@@ -234,7 +234,7 @@ def handle_command(command, channel, user, ts):
 
         # if they handed back a full answer, use it
         if isinstance(cmd_answer, dict):
-            return slack_client.api_call(**response)
+            return slack_client.api_call(**cmd_answer)
 
         return slack_client.api_call("chat.postMessage",
                                      channel=channel,
