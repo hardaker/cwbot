@@ -132,7 +132,7 @@ def bot_score(channel, user, args, ts):
         user_info = find_user(user)
         time = average_score(our_data['cwtimes'][user]['times'])
         ave_score = sec_to_hhmm(time)
-        line = "%-30.30s %3d    %s\n" % (user_info['real_name'],
+        line = "%-30.30s %3d    %s" % (user_info['real_name'],
                                          len(our_data['cwtimes'][user]['times']),
                                          ave_score)
         score_list.append([time, line])
