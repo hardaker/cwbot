@@ -125,16 +125,27 @@ def bot_score(channel, user, args, ts):
     if 'cwtimes' not in our_data:
         return make_error("No scores recorded so far", channel)
 
-    # create a header
-    result_msg = "```"
-    result_msg += "%-30.30s %3s    %s\n" % ("Name", "Cnt", "Average")
+    score_list = []
 
     # add each user scores summary
     for user in our_data['cwtimes']:
         user_info = find_user(user)
-        ave_score = sec_to_hhmm(average_score(our_data['cwtimes'][user]['times']))
-        result_msg += "%-30.30s %3d    %s\n" % (user_info['real_name'], len(our_data['cwtimes'][user]['times']),
-                                              sec_to_hhmm(average_score(our_data['cwtimes'][user]['times'])))
+        time = average_score(our_data['cwtimes'][user]['times'])
+        ave_score = sec_to_hhmm(time)
+        line = "%-30.30s %3d    %s\n" % (user_info['real_name'],
+                                         len(our_data['cwtimes'][user]['times']),
+                                         ave_score)
+        score_list.append([time, line])
+
+
+    score_list = sorted(score_list, key=lambda item: item[0])
+
+    # create a header
+    result_msg = "```"
+    result_msg += "%-30.30s %3s    %s\n" % ("Name", "Cnt", "Average")
+
+    result_msg += "\n".join([x[1] for x in score_list])
+
     result_msg += "```"
 
     return result_msg

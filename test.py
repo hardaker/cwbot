@@ -44,6 +44,7 @@ class CWTests(unittest.TestCase):
 
         self.assertTrue(results.find('user one') < results.find('user two'),
                         "user one is faster")
+        sys.stderr.write(results)
 
         data['user1']['times'].append({'time': 1000})
          
@@ -51,3 +52,6 @@ class CWTests(unittest.TestCase):
         sys.stderr.write(results)
         self.assertTrue(results.find('user one') > results.find('user two'),
                         "user one is slower")
+
+if __name__ == "__main__":
+    unittest.main()
