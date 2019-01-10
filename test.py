@@ -44,12 +44,10 @@ class CWTests(unittest.TestCase):
 
         self.assertTrue(results.find('user one') < results.find('user two'),
                         "user one is faster")
-        sys.stderr.write(results)
 
         data['user1']['times'].append({'time': 1000})
          
         results = s.bot_score("test", "user1", {}, {})
-        sys.stderr.write(results)
         self.assertTrue(results.find('user one') > results.find('user two'),
                         "user one is slower")
 
