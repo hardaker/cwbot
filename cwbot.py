@@ -154,6 +154,7 @@ def bot_score(channel, user, args, ts):
 
         line = "%-30.30s %5d %5d %s" % (user_info['real_name'],
                                         len(our_data['cwtimes'][user]['times']),
+                                        fails,
                                         ave_score)
         score_list.append([time, line])
 
