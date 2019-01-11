@@ -272,7 +272,7 @@ def handle_command(command, channel, user, ts):
     # special handling for no cmd but just HH:MM
     if cmd not in bot_commands:
         result = time_parse.match(cmd)
-        if result:
+        if result or cmd.upper() == "DNF":
             args = [cmd]
             cmd = "time"
 
