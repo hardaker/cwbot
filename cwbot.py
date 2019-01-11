@@ -152,7 +152,7 @@ def bot_score(channel, user, args, ts):
         ave_score = sec_to_hhmm(time)
         fails = count_failures(our_data['cwtimes'][user]['times'])
 
-        line = "%-30.30s %5d %5d %s" % (user_info['real_name'],
+        line = "%-30.30s %5d %5d   %s" % (user_info['real_name'],
                                         len(our_data['cwtimes'][user]['times']),
                                         fails,
                                         ave_score)
