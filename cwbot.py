@@ -91,7 +91,7 @@ def bot_add_time(channel, user, args, ts):
 
     date = make_datestr()
 
-    if args[0] != "DNF":
+    if args[0].upper() != "DNF":
         time = bot_parse_hour_minute(args[0])
         if not time:
             return make_error("invalid time; must be MM:SS formatted.", channel)
