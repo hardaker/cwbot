@@ -122,8 +122,18 @@ def average_score(entries):
     if(len(entries) == 0):
         return 0
     for e in entries:
-        total = total + e['time']
+        if e.get('type') != 'DNF':
+            total = total + e['time']
     return float(total)/float(len(entries))
+
+def count_failures(entries):
+    total = 0
+    if(len(entries) == 0):
+        return 0
+    for e in entries:
+        if e.get('type') == 'DNF':
+            total += 1
+    return total
 
 def sec_to_hhmm(secs):
     return "%02d:%02d" % (secs/60, secs % 60)
@@ -137,11 +147,14 @@ def bot_score(channel, user, args, ts):
     # add each user scores summary
     for user in our_data['cwtimes']:
         user_info = find_user(user)
+
         time = average_score(our_data['cwtimes'][user]['times'])
         ave_score = sec_to_hhmm(time)
-        line = "%-30.30s %3d    %s" % (user_info['real_name'],
-                                         len(our_data['cwtimes'][user]['times']),
-                                         ave_score)
+        fails = count_failures(our_data['cwtimes'][user]['times'])
+
+        line = "%-30.30s %5d %5d %s" % (user_info['real_name'],
+                                        len(our_data['cwtimes'][user]['times']),
+                                        ave_score)
         score_list.append([time, line])
 
 
@@ -149,7 +162,7 @@ def bot_score(channel, user, args, ts):
 
     # create a header
     result_msg = "```"
-    result_msg += "%-30.30s %3s    %s\n" % ("Name", "Cnt", "Average")
+    result_msg += "%-30.30s %5s %5s   %s\n" % ("Name", "Count", "Fails", "Average")
 
     result_msg += "\n".join([x[1] for x in score_list])
 
