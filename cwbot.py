@@ -116,7 +116,7 @@ def bot_dnf(channel, user, args, ts):
     r = bot_add_time(channel, user, ['DNF'], ts)
     r['name'] = 'sob'
 
-    return response
+    return r
 
 def average_score(entries):
     total = 0
@@ -159,9 +159,15 @@ def bot_score(channel, user, args, ts):
     return result_msg
 
 def bot_entries(channel, user, args, ts):
+
+    def entry_2_string(e):
+        if e.get('type', '') == 'DNF':
+            return "  DNF"
+        return sec_to_hhmm(e['time'])
+
     result_str = "```"
     for entry in our_data['cwtimes'][user]['times']:
-        result_str += "%-15.15s %s\n" % (entry['date'], sec_to_hhmm(entry['time']))
+        result_str += "%-15.15s %s\n" % (entry['date'], entry_2_string(entry))
     result_str += "```"
 
     # Finds and executes the given command, filling in response
@@ -176,6 +182,8 @@ bot_commands = {
                'help': "print out information about me"},
     'time':   {'fn': bot_add_time,
                'help': "Add todays' time to your running score"},
+    'dnf':    {'fn': bot_dnf,
+               'help': "Mark today as a did-not-finish"},
     'scores': {'fn': bot_score,
                'help': "Display the scores to date"},
     'score':   {'fn': bot_score},
