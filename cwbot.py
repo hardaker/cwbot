@@ -2,7 +2,6 @@ import os
 import time
 import re
 import json
-import atexit
 import time
 from slackclient import SlackClient
 
