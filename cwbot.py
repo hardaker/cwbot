@@ -92,11 +92,13 @@ def bot_add_time(channel, user, args, ts):
 
     date = make_datestr()
 
-    time = bot_parse_hour_minute(args[0])
-    if not time:
-        return make_error("invalid time; must be MM:SS formatted.", channel)
-    
-    our_data['cwtimes'][user]['times'].append({'date': date, 'time': time})
+    if args[0] != "DNF":
+        time = bot_parse_hour_minute(args[0])
+        if not time:
+            return make_error("invalid time; must be MM:SS formatted.", channel)
+        our_data['cwtimes'][user]['times'].append({'date': date, 'time': time})
+    else:
+        our_data['cwtimes'][user]['times'].append({'date': date, 'time': 300, "type":"DNF"})
 
     save_data()
 
@@ -107,6 +109,12 @@ def bot_add_time(channel, user, args, ts):
         "timestamp": ts,
         "name": "white_check_mark"
     }
+
+    return response
+
+def bot_dnf(channel, user, args, ts):
+    r = bot_add_time(channel, user, ['DNF'], ts)
+    r['name'] = 'sob'
 
     return response
 
